@@ -1,0 +1,16 @@
+{
+    "name": "com.fluid.find-and-replace.Tests",
+    "references": [
+        "com.fluid.find-and-replace"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

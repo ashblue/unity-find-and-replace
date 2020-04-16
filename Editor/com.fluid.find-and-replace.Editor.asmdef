@@ -1,0 +1,12 @@
+{
+    "name": "com.fluid.find-and-replace.Editor",
+    "references": [
+        "com.fluid.find-and-replace"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
