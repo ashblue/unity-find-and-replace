@@ -1,0 +1,7 @@
+{
+  "name": "com.fluid.find-and-replace",
+  "version": "0.0.0",
+  "displayName": "Unity Find And Replace",
+  "description": "A simple modular find and replace tool for Unity",
+  "unity": "2019.3"
+}

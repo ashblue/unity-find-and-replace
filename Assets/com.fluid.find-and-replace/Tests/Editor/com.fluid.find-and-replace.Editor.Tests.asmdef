@@ -1,0 +1,19 @@
+{
+    "name": "com.fluid.find-and-replace.Editor.Tests",
+    "references": [
+        "com.fluid.find-and-replace",
+        "com.fluid.find-and-replace.Editor"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
