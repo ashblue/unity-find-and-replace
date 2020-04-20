@@ -1,0 +1,12 @@
+<UXML xmlns="UnityEngine.UIElements">
+    <ScrollView>
+        <VisualElement class="p-window">
+            <Style src="./PageFindReplace.uss" />
+
+            <TextField class="p-window__input-find-text" />
+            <Button class="p-window__search" text="Search" />
+
+            <VisualElement class="p-window__results" />
+        </VisualElement>
+    </ScrollView>
+</UXML>
