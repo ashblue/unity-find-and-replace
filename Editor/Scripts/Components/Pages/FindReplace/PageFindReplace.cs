@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CleverCrow.Fluid.FindAndReplace.Editors;
 using UnityEngine.UIElements;
@@ -5,10 +6,30 @@ using UnityEngine.UIElements;
 namespace CleverCrow.Fluid.FindAndReplace {
     public class PageFindReplace : ComponentBase {
         private List<SearchResult> _results = new List<SearchResult>();
+        private Func<string, IFindResult[]> _search;
 
         public PageFindReplace (VisualElement container) : base(container) {
-            var resultsEl = container.GetElement<VisualElement>("p-window__results");
-            _results.Add(new SearchResult(resultsEl));
+            BindClickFind();
+        }
+
+        private void BindClickFind () {
+            var btn = _container.GetElement<Button>("p-window__search");
+            btn.clicked += ClickFindButton;
+        }
+
+        private void ClickFindButton () {
+            var searchText = _container.GetElement<TextField>("p-window__input-find-text").value;
+            var resultContainer = _container.GetElement<VisualElement>("p-window__results");
+
+            resultContainer.Clear();
+            _results.Clear();
+            foreach (var result in _search.Invoke(searchText)) {
+                _results.Add(new SearchResult(resultContainer, searchText, result));
+            }
+        }
+
+        public void SetSearch (Func<string, IFindResult[]> search) {
+            _search = search;
         }
     }
 }
