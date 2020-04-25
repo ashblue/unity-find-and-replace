@@ -2,5 +2,6 @@
     <VisualElement class="m-search-result">
         <Style src="./SearchResult.uss" />
         <TextElement class="m-search-result__text" />
+        <Button class="m-search-result__show" />
     </VisualElement>
 </UXML>

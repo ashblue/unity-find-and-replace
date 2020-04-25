@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using CleverCrow.Fluid.FindAndReplace.Editors;
 using UnityEngine.UIElements;
 
@@ -24,7 +25,11 @@ namespace CleverCrow.Fluid.FindAndReplace {
             resultContainer.Clear();
             _results.Clear();
             foreach (var result in _search.Invoke(searchText)) {
-                _results.Add(new SearchResult(resultContainer, searchText, result));
+                var matches = Regex.Matches(result.Text, $"{searchText}");
+
+                for (var i = 0; i < matches.Count; i++) {
+                    _results.Add(new SearchResult(resultContainer, searchText, result, i));
+                }
             }
         }
 

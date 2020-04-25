@@ -21,6 +21,11 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                 return root;
             }
 
+            [TearDown]
+            public void AfterEach () {
+                FindReplaceWindow.CloseWindow();
+            }
+
             public class Defaults : ClickingFind {
                 [Test]
                 public void It_should_find_given_text_and_display_results () {
@@ -29,11 +34,8 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                     findResult.Text.Returns(searchText);
 
                     var root = Setup(searchText, new[] {findResult});
-                    var searchInput = root.GetElement<TextField>("p-window__input-find-text");
-                    searchInput.value = searchText;
-                    root.ClickButton("p-window__search");
-
                     var result = root.GetText("m-search-result__text");
+
                     Assert.AreEqual(searchText, result);
                 }
 
@@ -44,9 +46,8 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                     findResult.Text.Returns(searchText);
 
                     var root = Setup(searchText, new[] {findResult});
-                    root.ClickButton("p-window__search");
+                    var result = root.Query<VisualElement>(null, "m-search-result");
 
-                    var result = root.Query<VisualElement>(null, "m-search-result__text");
                     Assert.AreEqual(1, result.ToList().Count);
                 }
 
@@ -54,10 +55,31 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                 public void It_should_not_display_any_results_if_there_is_no_search_results () {
                     var root = Setup("", new IFindResult[0]);
 
-                    root.ClickButton("p-window__search");
-
-                    var result = root.Query<VisualElement>(null, "m-search-result__text");
+                    var result = root.Query<VisualElement>(null, "m-search-result");
                     Assert.AreEqual(0, result.ToList().Count);
+                }
+
+                [Test]
+                public void It_should_display_multiple_results_for_strings_with_multiple_keywords () {
+                    const string searchText = "Lorem";
+                    var findResult = Substitute.For<IFindResult>();
+                    findResult.Text.Returns("Lorem Lorem");
+
+                    var root = Setup(searchText, new[] {findResult});
+                    var results = root.Query<VisualElement>(null, "m-search-result");
+
+                    Assert.AreEqual(2, results.ToList().Count);
+                }
+
+                [Test]
+                public void It_should_run_the_show_logic_when_clicking_Show_on_a_result () {
+                    var findResult = Substitute.For<IFindResult>();
+                    findResult.Text.Returns("Lorem Ipsum");
+
+                    var root = Setup("Lorem", new[] {findResult});
+                    root.ClickButton("m-search-result__show");
+
+                    findResult.Received(1).Show();
                 }
             }
 
@@ -66,32 +88,48 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                 private const string RESULT_TEXT =
                     "Chantey topmast shrouds carouser landlubber or just lubber spirits reef sails Spanish Main loot draft. American Main spyglass pillage driver bowsprit trysail splice the main brace killick loaded to the gunwalls Gold Road. Rigging furl coffer jack tackle rutters crimp spirits pink jib";
 
-                private string SetupStrings (string resultText) {
+                private VisualElement SetupStrings (string resultText) {
                     var findResult = Substitute.For<IFindResult>();
                     findResult.Text.Returns(resultText);
 
-                    var root = Setup(SEARCH_TEXT, new[] {findResult});
-                    return root.GetText("m-search-result__text");
+                    return Setup(SEARCH_TEXT, new[] {findResult});
                 }
 
                 [Test]
                 public void It_should_print_result_text_a_maximum_of_60_characters () {
                     var words = $"Lorem {RESULT_TEXT}";
-                    var result = SetupStrings(words);
+
+                    var root = SetupStrings(words);
+                    var result = root.GetText("m-search-result__text");
 
                     Assert.AreEqual($"{words.Substring(0, 60)}", result);
                 }
 
                 [Test]
+                public void It_should_show_the_2nd_of_multiple_matches_with_the_correct_preview () {
+                    var words = $"{SEARCH_TEXT} {RESULT_TEXT} {SEARCH_TEXT}";
+
+                    var root = SetupStrings(words);
+                    var result = root
+                        .Query<TextElement>(null, "m-search-result__text")
+                        .Last()
+                        .text;
+
+                    Assert.AreNotEqual(result.IndexOf(SEARCH_TEXT, StringComparison.Ordinal), 0);
+                }
+
+                [Test]
                 public void It_should_keep_the_search_keyword_within_view () {
-                    var result = SetupStrings($"{RESULT_TEXT} Lorem");
+                    var root = SetupStrings($"{RESULT_TEXT} Lorem");
+                    var result = root.GetText("m-search-result__text");
 
                     Assert.IsTrue(result.Contains(SEARCH_TEXT));
                 }
 
                 [Test]
                 public void It_should_add_ellipses_to_nested_search_text_results () {
-                    var result = SetupStrings($"{RESULT_TEXT} Lorem");
+                    var root = SetupStrings($"{RESULT_TEXT} Lorem");
+                    var result = root.GetText("m-search-result__text");
 
                     Assert.IsTrue(result.Contains("..."));
                 }

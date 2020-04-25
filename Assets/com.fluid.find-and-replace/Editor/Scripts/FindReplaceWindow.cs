@@ -5,6 +5,7 @@ using UnityEngine;
 namespace CleverCrow.Fluid.FindAndReplace.Editors {
     public interface IFindResult {
         string Text { get; }
+        void Show ();
     }
 
     public class FindReplaceWindow : EditorWindow {
