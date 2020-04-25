@@ -32,5 +32,15 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
 
             return el;
         }
+
+        public static T GetElementLast<T> (this VisualElement root, string className) where T : VisualElement {
+            var el = root
+                .Query<T>(null, className)
+                .Last();
+
+            Debug.Assert(el != null, $"Element {className} not found");
+
+            return el;
+        }
     }
 }
