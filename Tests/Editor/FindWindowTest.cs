@@ -6,16 +6,24 @@ using UnityEngine.UIElements;
 namespace CleverCrow.Fluid.FindAndReplace.Editors {
     public class FindReplaceWindowTest {
         public class ClickingFind {
-            private VisualElement Setup (string searchText, IFindResult[] result) {
+            private VisualElement Setup (string searchText, IFindResult[] result, bool matchCase = true) {
                 FindReplaceWindow.CloseWindow();
 
                 // @TODO This should probably be a constructed object for sanity reasons
                 var search = Substitute.For<Func<string, IFindResult[]>>();
                 search(searchText).Returns(result);
+                if (!matchCase) {
+                    search(searchText.ToLower()).Returns(result);
+                }
 
                 var root = FindReplaceWindow.ShowWindow(search).rootVisualElement;
+
                 var searchInput = root.GetElement<TextField>("p-window__input-find-text");
                 searchInput.value = searchText;
+
+                var elMatchCase = root.GetElement<Toggle>("p-window__match-case");
+                elMatchCase.value = matchCase;
+
                 root.ClickButton("p-window__search");
 
                 return root;
@@ -83,16 +91,29 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                 }
             }
 
+            public class WithNonCaseSensitiveSearch : ClickingFind {
+                [Test]
+                public void It_should_match_non_matching_case () {
+                    var findResult = Substitute.For<IFindResult>();
+                    findResult.Text.Returns("Lorem ipsum");
+
+                    var root = Setup("lorem", new[] {findResult}, false);
+                    var result = root.GetElement<VisualElement>("m-search-result");
+
+                    Assert.IsNotNull(result);
+                }
+            }
+
             public class HandlingLongStrings : ClickingFind {
                 private const string SEARCH_TEXT = "Lorem";
                 private const string RESULT_TEXT =
                     "Chantey topmast shrouds carouser landlubber or just lubber spirits reef sails Spanish Main loot draft. American Main spyglass pillage driver bowsprit trysail splice the main brace killick loaded to the gunwalls Gold Road. Rigging furl coffer jack tackle rutters crimp spirits pink jib";
 
-                private VisualElement SetupStrings (string resultText) {
+                private VisualElement SetupStrings (string resultText, bool matchCase = true) {
                     var findResult = Substitute.For<IFindResult>();
                     findResult.Text.Returns(resultText);
 
-                    return Setup(SEARCH_TEXT, new[] {findResult});
+                    return Setup(SEARCH_TEXT, new[] {findResult}, matchCase);
                 }
 
                 [Test]
@@ -132,6 +153,14 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                     var result = root.GetText("m-search-result__text");
 
                     Assert.IsTrue(result.Contains("..."));
+                }
+
+                [Test]
+                public void It_should_show_correct_preview_text_when_any_case () {
+                    var root = SetupStrings($"{RESULT_TEXT} lorem", false);
+                    var result = root.GetText("m-search-result__text");
+
+                    Assert.IsTrue(result.Contains("lorem"));
                 }
             }
         }
