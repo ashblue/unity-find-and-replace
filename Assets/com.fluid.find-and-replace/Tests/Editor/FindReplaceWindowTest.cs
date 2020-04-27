@@ -1,6 +1,7 @@
 using System;
 using NUnit.Framework;
 using NSubstitute;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CleverCrow.Fluid.FindAndReplace.Editors {
@@ -9,14 +10,7 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
             private VisualElement Setup (string searchText, IFindResult[] result, bool matchCase = true) {
                 FindReplaceWindow.CloseWindow();
 
-                // @TODO This should probably be a constructed object for sanity reasons
-                var search = Substitute.For<Func<string, IFindResult[]>>();
-                search(searchText).Returns(result);
-                if (!matchCase) {
-                    search(searchText.ToLower()).Returns(result);
-                }
-
-                var root = FindReplaceWindow.ShowWindow(search).rootVisualElement;
+                var root = FindReplaceWindow.ShowWindow(Search(searchText, result)).rootVisualElement;
 
                 var searchInput = root.GetElement<TextField>("p-window__input-find-text");
                 searchInput.value = searchText;
@@ -32,6 +26,13 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
             [TearDown]
             public void AfterEach () {
                 FindReplaceWindow.CloseWindow();
+            }
+
+            private Func<Func<string, bool>, IFindResult[]> Search (string searchText, IFindResult[] result) {
+                return (isValid) => {
+                    if (isValid(searchText)) return result;
+                    return null;
+                };
             }
 
             public class Defaults : ClickingFind {
@@ -60,14 +61,6 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                 }
 
                 [Test]
-                public void It_should_not_display_any_results_if_there_is_no_search_results () {
-                    var root = Setup("", new IFindResult[0]);
-
-                    var result = root.Query<VisualElement>(null, "m-search-result");
-                    Assert.AreEqual(0, result.ToList().Count);
-                }
-
-                [Test]
                 public void It_should_display_multiple_results_for_strings_with_multiple_keywords () {
                     const string searchText = "Lorem";
                     var findResult = Substitute.For<IFindResult>();
@@ -88,6 +81,40 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                     root.ClickButton("m-search-result__show");
 
                     findResult.Received(1).Show();
+                }
+            }
+
+            public class EmptySearches : ClickingFind {
+                [Test]
+                public void It_should_not_display_any_results () {
+                    var root = Setup("", new IFindResult[0]);
+
+                    var result = root.Query<VisualElement>(null, "m-search-result");
+                    Assert.AreEqual(0, result.ToList().Count);
+                }
+
+                [Test]
+                public void It_should_not_display_a_message_nothing_was_found_by_default () {
+                    FindReplaceWindow.CloseWindow();
+
+                    var root = FindReplaceWindow
+                        .ShowWindow(Substitute.For<Func<Func<string, bool>, IFindResult[]>>())
+                        .rootVisualElement;
+                    var result = root.GetElement<TextElement>("p-window__no-result");
+
+                    Assert.IsTrue(result.ClassListContains("hide"));
+                }
+
+                [Test]
+                public void It_should_display_a_message_nothing_was_found () {
+                    var root = Setup("", new IFindResult[0]);
+                    var result = root.GetElement<TextElement>("p-window__no-result");
+
+                    Assert.IsFalse(result.ClassListContains("hide"));
+                }
+
+                public void It_should_clear_not_found_message_when_searching_again () {
+
                 }
             }
 
@@ -116,51 +143,63 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                     return Setup(SEARCH_TEXT, new[] {findResult}, matchCase);
                 }
 
-                [Test]
-                public void It_should_print_result_text_a_maximum_of_60_characters () {
-                    var words = $"Lorem {RESULT_TEXT}";
+                public class WhenStrictCase : HandlingLongStrings {
+                    [Test]
+                    public void It_should_print_result_text_a_maximum_of_60_characters () {
+                        var words = $"Lorem {RESULT_TEXT}";
 
-                    var root = SetupStrings(words);
-                    var result = root.GetText("m-search-result__text");
+                        var root = SetupStrings(words);
+                        var result = root.GetText("m-search-result__text");
 
-                    Assert.AreEqual($"{words.Substring(0, 60)}", result);
+                        Assert.AreEqual($"{words.Substring(0, 60)}", result);
+                    }
+
+                    [Test]
+                    public void It_should_show_the_2nd_of_multiple_matches_with_the_correct_preview () {
+                        var words = $"{SEARCH_TEXT} {RESULT_TEXT} {SEARCH_TEXT}";
+
+                        var root = SetupStrings(words);
+                        var result = root
+                            .Query<TextElement>(null, "m-search-result__text")
+                            .Last()
+                            .text;
+
+                        Assert.AreNotEqual(result.IndexOf(SEARCH_TEXT, StringComparison.Ordinal), 0);
+                    }
+
+                    [Test]
+                    public void It_should_keep_the_search_keyword_within_view () {
+                        var root = SetupStrings($"{RESULT_TEXT} Lorem");
+                        var result = root.GetText("m-search-result__text");
+
+                        Assert.IsTrue(result.Contains(SEARCH_TEXT));
+                    }
+
+                    [Test]
+                    public void It_should_add_ellipses_to_nested_search_text_results () {
+                        var root = SetupStrings($"{RESULT_TEXT} Lorem");
+                        var result = root.GetText("m-search-result__text");
+
+                        Assert.IsTrue(result.Contains("..."));
+                    }
                 }
 
-                [Test]
-                public void It_should_show_the_2nd_of_multiple_matches_with_the_correct_preview () {
-                    var words = $"{SEARCH_TEXT} {RESULT_TEXT} {SEARCH_TEXT}";
+                public class WhenAnyCase : HandlingLongStrings {
+                    [Test]
+                    public void It_should_show_correct_preview_text () {
+                        var root = SetupStrings($"{RESULT_TEXT} lorem", false);
+                        var result = root.GetText("m-search-result__text");
 
-                    var root = SetupStrings(words);
-                    var result = root
-                        .Query<TextElement>(null, "m-search-result__text")
-                        .Last()
-                        .text;
+                        Assert.IsTrue(result.Contains("lorem"));
+                    }
 
-                    Assert.AreNotEqual(result.IndexOf(SEARCH_TEXT, StringComparison.Ordinal), 0);
-                }
+                    [Test]
+                    public void It_should_show_the_correct_preview_for_multiple_results () {
+                        var root = SetupStrings($"Lorem {RESULT_TEXT} lorem", false);
+                        var result = root.GetText("m-search-result__text");
 
-                [Test]
-                public void It_should_keep_the_search_keyword_within_view () {
-                    var root = SetupStrings($"{RESULT_TEXT} Lorem");
-                    var result = root.GetText("m-search-result__text");
-
-                    Assert.IsTrue(result.Contains(SEARCH_TEXT));
-                }
-
-                [Test]
-                public void It_should_add_ellipses_to_nested_search_text_results () {
-                    var root = SetupStrings($"{RESULT_TEXT} Lorem");
-                    var result = root.GetText("m-search-result__text");
-
-                    Assert.IsTrue(result.Contains("..."));
-                }
-
-                [Test]
-                public void It_should_show_correct_preview_text_when_any_case () {
-                    var root = SetupStrings($"{RESULT_TEXT} lorem", false);
-                    var result = root.GetText("m-search-result__text");
-
-                    Assert.IsTrue(result.Contains("lorem"));
+                        Assert.IsTrue(result.Contains("Lorem"));
+                    }
                 }
             }
         }
