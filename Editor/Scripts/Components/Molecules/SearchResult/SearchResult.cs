@@ -4,8 +4,17 @@ using UnityEngine.UIElements;
 
 namespace CleverCrow.Fluid.FindAndReplace.Editors {
     public class SearchResult : ComponentBase {
-        public SearchResult (VisualElement container, string search, IFindResult result, int index) : base(container) {
-            var searchWordIndex = Mathf.Max(result.Text.IndexOf(search, index, StringComparison.Ordinal) - 15, 0);
+        public SearchResult (
+            VisualElement container,
+            string search,
+            IFindResult result,
+            int index,
+            bool matchCase
+        ) : base(container) {
+            var resultText = result.Text;
+            if (!matchCase) resultText = resultText.ToLower();
+
+            var searchWordIndex = Mathf.Max(resultText.IndexOf(search, index, StringComparison.Ordinal) - 15, 0);
             var maxLength = Mathf.Min(60, result.Text.Length - searchWordIndex);
 
             var preText = "";

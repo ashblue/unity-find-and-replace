@@ -12,7 +12,7 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
         private static FindReplaceWindow _window;
         private PageFindReplace _page;
 
-        public static FindReplaceWindow ShowWindow (Func<string, IFindResult[]> search) {
+        public static FindReplaceWindow ShowWindow (Func<Func<string, bool>, IFindResult[]> search) {
             _window = GetWindow<FindReplaceWindow>();
             _window.titleContent = new GUIContent("Find Replace");
             _window.SetSearch(search);
@@ -20,7 +20,7 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
             return _window;
         }
 
-        private void SetSearch (Func<string,IFindResult[]> search) {
+        private void SetSearch (Func<Func<string, bool>,IFindResult[]> search) {
             _page.SetSearch(search);
         }
 
