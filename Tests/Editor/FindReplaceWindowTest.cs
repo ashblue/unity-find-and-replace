@@ -1,16 +1,32 @@
 using System;
 using NUnit.Framework;
 using NSubstitute;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CleverCrow.Fluid.FindAndReplace.Editors {
     public class FindReplaceWindowTest {
+        public class FindReplaceWindowStub : FindReplaceWindowBase {
+            public string searchText;
+            public IFindResult[] result;
+
+            protected override IFindResult[] GetFindResults (Func<string, bool> isValid) {
+                if (isValid(searchText)) {
+                    return result;
+                }
+
+                return null;
+            }
+        }
+
         public class ClickingFind {
             private VisualElement Setup (string searchText, IFindResult[] result, bool matchCase = true) {
-                FindReplaceWindow.CloseWindow();
+                FindReplaceWindowBase.CloseWindow();
 
-                var root = FindReplaceWindow.ShowWindow(Search(searchText, result)).rootVisualElement;
+                var window = FindReplaceWindowBase.ShowWindow<FindReplaceWindowStub>();
+                window.searchText = searchText;
+                window.result = result;
+
+                var root = window.rootVisualElement;
 
                 var searchInput = root.GetElement<TextField>("p-window__input-find-text");
                 searchInput.value = searchText;
@@ -25,7 +41,7 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
 
             [TearDown]
             public void AfterEach () {
-                FindReplaceWindow.CloseWindow();
+                FindReplaceWindowBase.CloseWindow();
             }
 
             private Func<Func<string, bool>, IFindResult[]> Search (string searchText, IFindResult[] result) {
@@ -95,10 +111,10 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
 
                 [Test]
                 public void It_should_not_display_a_message_nothing_was_found_by_default () {
-                    FindReplaceWindow.CloseWindow();
+                    FindReplaceWindowBase.CloseWindow();
 
-                    var root = FindReplaceWindow
-                        .ShowWindow(Substitute.For<Func<Func<string, bool>, IFindResult[]>>())
+                    var root = FindReplaceWindowBase
+                        .ShowWindow<FindReplaceWindowStub>()
                         .rootVisualElement;
                     var result = root.GetElement<TextElement>("p-window__no-result");
 
@@ -113,8 +129,18 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                     Assert.IsFalse(result.ClassListContains("hide"));
                 }
 
+                [Test]
                 public void It_should_clear_not_found_message_when_searching_again () {
+                    Setup("", new IFindResult[0]);
+                    FindReplaceWindowBase.CloseWindow();
 
+                    var findResult = Substitute.For<IFindResult>();
+                    findResult.Text.Returns("Lorem Ipsum");
+                    var root = Setup("Lorem", new [] {findResult});
+
+                    var result = root.GetElement<TextElement>("p-window__no-result");
+
+                    Assert.IsTrue(result.ClassListContains("hide"));
                 }
             }
 
