@@ -17,6 +17,9 @@ namespace CleverCrow.Fluid.FindAndReplace.Examples {
         public void Show () {
             Selection.activeObject = _target;;
         }
+
+        public void Replace () {
+        }
     }
 
     public class SearchExample : FindReplaceWindowBase {

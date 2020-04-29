@@ -6,6 +6,7 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
     public interface IFindResult {
         string Text { get; }
         void Show ();
+        void Replace ();
     }
 
     public abstract class FindReplaceWindowBase : EditorWindow {

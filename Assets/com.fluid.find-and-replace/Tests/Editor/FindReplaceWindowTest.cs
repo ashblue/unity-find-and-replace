@@ -5,20 +5,58 @@ using UnityEngine.UIElements;
 
 namespace CleverCrow.Fluid.FindAndReplace.Editors {
     public class FindReplaceWindowTest {
-        public class FindReplaceWindowStub : FindReplaceWindowBase {
-            public string searchText;
-            public IFindResult[] result;
+        [TearDown]
+        public void AfterEach () {
+            FindReplaceWindowBase.CloseWindow();
+        }
 
-            protected override IFindResult[] GetFindResults (Func<string, bool> isValid) {
-                if (isValid(searchText)) {
-                    return result;
+        public class ClickingReplace : FindReplaceWindowTest {
+            public class WhenClickingReplace : ClickingFind {
+                [Test]
+                public void It_should_trigger_the_result_replace_logic () {
+                    var searchText = "Lorem";
+                    var findResult = Substitute.For<IFindResult>();
+                    findResult.Text.Returns("Lorem Ipsum");
+
+                    var window = FindReplaceWindowBase.ShowWindow<FindReplaceWindowStub>();
+                    window.searchText = searchText;
+                    window.result = new []{findResult};
+
+                    var root = window.rootVisualElement;
+
+                    var searchInput = root.GetElement<TextField>("p-window__input-find-text");
+                    searchInput.value = searchText;
+
+                    root.ClickButton("p-window__search");
+                    root.ClickButton("m-search-result__replace");
+
+                    findResult.Received(1).Replace();
                 }
 
-                return null;
+                public void It_should_pass_the_target_word_index_with_target_word_length_replacement_word () {
+
+                }
+
+                public void It_should_update_the_displayed_result_text_preview () {
+                }
+
+                public void It_should_replace_the_original_word_when_replacing_again () {
+
+                }
+            }
+
+            public class WhenClickingReplaceAll : ClickingFind {
+                public void It_should_update_all_text_previews () {
+
+                }
+
+                public void It_should_run_replace_on_all_results () {
+
+                }
             }
         }
 
-        public class ClickingFind {
+        public class ClickingFind : FindReplaceWindowTest {
             private VisualElement Setup (string searchText, IFindResult[] result, bool matchCase = true) {
                 FindReplaceWindowBase.CloseWindow();
 
@@ -37,18 +75,6 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
                 root.ClickButton("p-window__search");
 
                 return root;
-            }
-
-            [TearDown]
-            public void AfterEach () {
-                FindReplaceWindowBase.CloseWindow();
-            }
-
-            private Func<Func<string, bool>, IFindResult[]> Search (string searchText, IFindResult[] result) {
-                return (isValid) => {
-                    if (isValid(searchText)) return result;
-                    return null;
-                };
             }
 
             public class Defaults : ClickingFind {

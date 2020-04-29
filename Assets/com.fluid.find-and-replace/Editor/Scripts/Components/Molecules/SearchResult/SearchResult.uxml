@@ -3,5 +3,6 @@
         <Style src="./SearchResult.uss" />
         <TextElement class="m-search-result__text" />
         <Button class="m-search-result__show" text="Show" />
+        <Button class="m-search-result__replace" text="Replace" />
     </VisualElement>
 </UXML>
