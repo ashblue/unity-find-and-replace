@@ -25,8 +25,11 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
             var elText = container.GetElementLast<TextElement>("m-search-result__text");
             elText.text = preText + result.Text.Substring(searchWordIndex, maxLength);
 
-            var elButton = container.GetElementLast<Button>("m-search-result__show");
-            elButton.clicked += result.Show;
+            var elShow = container.GetElementLast<Button>("m-search-result__show");
+            elShow.clicked += result.Show;
+
+            var elReplace = container.GetElement<Button>("m-search-result__replace");
+            elReplace.clicked += result.Replace;
         }
     }
 }
