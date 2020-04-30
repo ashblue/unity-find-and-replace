@@ -18,7 +18,14 @@ namespace CleverCrow.Fluid.FindAndReplace.Examples {
             Selection.activeObject = _target;;
         }
 
-        public void Replace () {
+        public void Replace (int startIndex, int charactersToReplace, string replaceText) {
+            var beginning = Text.Substring(0, startIndex);
+            var end = Text.Substring(startIndex + charactersToReplace);
+            var text = $"{beginning}{replaceText}{end}";
+
+            var obj = new SerializedObject(_target);
+            obj.FindProperty("text").stringValue = text;
+            obj.ApplyModifiedProperties();
         }
     }
 

@@ -12,46 +12,67 @@ namespace CleverCrow.Fluid.FindAndReplace.Editors {
 
         public class ClickingReplace : FindReplaceWindowTest {
             public class WhenClickingReplace : ClickingFind {
-                [Test]
-                public void It_should_trigger_the_result_replace_logic () {
-                    var searchText = "Lorem";
+                private VisualElement _root;
+
+                private IFindResult Setup (string searchText, string replaceText, string resultText) {
                     var findResult = Substitute.For<IFindResult>();
-                    findResult.Text.Returns("Lorem Ipsum");
+                    findResult.Text.Returns(resultText);
 
                     var window = FindReplaceWindowBase.ShowWindow<FindReplaceWindowStub>();
                     window.searchText = searchText;
                     window.result = new []{findResult};
 
-                    var root = window.rootVisualElement;
+                    _root = window.rootVisualElement;
 
-                    var searchInput = root.GetElement<TextField>("p-window__input-find-text");
+                    var searchInput = _root.GetElement<TextField>("p-window__input-find-text");
                     searchInput.value = searchText;
 
-                    root.ClickButton("p-window__search");
-                    root.ClickButton("m-search-result__replace");
+                    var replaceInput = _root.GetElement<TextField>("p-window__input-replace-text");
+                    replaceInput.value = replaceText;
 
-                    findResult.Received(1).Replace();
+                    _root.ClickButton("p-window__search");
+                    _root.ClickButton("m-search-result__replace");
+
+                    return findResult;
                 }
 
-                public void It_should_pass_the_target_word_index_with_target_word_length_replacement_word () {
+                [Test]
+                public void It_should_pass_the_target_word_index_with_target_word_length_and_replacement_word () {
+                    var searchText = "Lorem";
+                    var replaceText = "Party";
 
+                    var findResult = Setup(searchText, replaceText, "Lorem Ipsum");
+
+                    findResult.Received(1).Replace(0, searchText.Length, replaceText);
                 }
 
-                public void It_should_update_the_displayed_result_text_preview () {
+                [Test]
+                public void It_should_find_a_different_word_length () {
+                    var searchText = "Boo";
+                    var replaceText = "Parties";
+                    var resultText = "Lorem Boo";
+
+                    var findResult = Setup(searchText, replaceText, resultText);
+
+                    findResult
+                        .Received(1)
+                        .Replace(
+                            resultText.IndexOf(searchText, StringComparison.Ordinal),
+                            searchText.Length,
+                            replaceText.Trim()
+                        );
                 }
 
-                public void It_should_replace_the_original_word_when_replacing_again () {
+                [Test]
+                public void It_should_hide_the_replace_button_after_replacing () {
+                    var searchText = "Boo";
+                    var replaceText = "Parties";
+                    var resultText = "Lorem Boo";
 
-                }
-            }
+                    Setup(searchText, replaceText, resultText);
+                    var replaceButton = _root.GetElement<Button>("m-search-result__replace");
 
-            public class WhenClickingReplaceAll : ClickingFind {
-                public void It_should_update_all_text_previews () {
-
-                }
-
-                public void It_should_run_replace_on_all_results () {
-
+                    Assert.IsTrue(replaceButton.ClassListContains("hide"));
                 }
             }
         }
