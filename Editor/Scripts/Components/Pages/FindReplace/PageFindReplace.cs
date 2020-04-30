@@ -50,9 +50,18 @@ namespace CleverCrow.Fluid.FindAndReplace {
 
                 var matches = Regex.Matches(text, $"{searchText}");
                 for (var i = 0; i < matches.Count; i++) {
-                    _results.Add(new SearchResult(resultContainer, searchText, result, i, matchCase.value));
+                    var resultElement = new SearchResult(resultContainer, searchText, result, i, matchCase.value);
+                    resultElement.OnClickReplace.AddListener(ClickReplace);
+                    _results.Add(resultElement);
                 }
             }
+        }
+
+        private void ClickReplace (SearchResult result) {
+            var replaceText = _container
+                .GetElement<TextField>("p-window__input-replace-text").value;
+
+            result.ReplaceText(replaceText);
         }
 
         private Func<string, bool> IsValid (string searchText, bool matchCase) {
