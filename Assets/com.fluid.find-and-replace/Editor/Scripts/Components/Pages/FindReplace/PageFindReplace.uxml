@@ -3,13 +3,18 @@
         <VisualElement class="p-window">
             <Style src="./PageFindReplace.uss" />
 
-            <TextField class="p-window__input-find-text" />
-            <Button class="p-window__search" text="Search" />
-            <Toggle class="p-window__match-case" text="Match Case" />
+            <VisualElement class="mb-3">
+                <TextField class="p-window__input-find-text" />
+                <Button class="p-window__search" text="Search" />
+                <Toggle class="p-window__match-case" text="Match Case" />
+            </VisualElement>
 
-            <TextElement text="Replace" />
-            <TextField class="p-window__input-replace-text" />
+            <VisualElement class="mb-3">
+                <TextElement class="h1" text="Replace Text (optional)" />
+                <TextField class="p-window__input-replace-text" />
+            </VisualElement>
 
+            <TextElement class="h1" text="Results" />
             <TextElement class="p-window__no-result hide" text="No search results found" />
             <VisualElement class="p-window__results" />
         </VisualElement>

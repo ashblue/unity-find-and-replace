@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5681f1199e34c0582b9fe5b40013bd2, type: 3}
   m_Name: TextExample 1
   m_EditorClassIdentifier: 
-  text: lorem
+  text: Lorem

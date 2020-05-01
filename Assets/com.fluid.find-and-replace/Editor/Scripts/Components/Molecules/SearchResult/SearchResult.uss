@@ -1,3 +1,12 @@
-.hide {
-    display: none;
+.m-search-result {
+    padding: 3px;
+}
+
+.m-search-result__buttons {
+    display: flex;
+    flex-direction: row;
+}
+
+.m-search-result__buttons Button {
+    flex-grow: 1;
 }
