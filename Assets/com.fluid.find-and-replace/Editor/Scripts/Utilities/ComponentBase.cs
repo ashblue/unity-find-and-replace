@@ -18,7 +18,7 @@ namespace CleverCrow.Fluid.FindAndReplace {
 
                 if (path.Contains("/PackageCache/")) {
                     var parts = path.Split(new[] { "/Editor/" }, StringSplitOptions.None);
-                    _path = $"{AssetPath.BasePath}com.fluid.unique-id/Editor/{parts[1]}"
+                    _path = $"{AssetPath.BasePath}com.fluid.find-and-replace/Editor/{parts[1]}"
                         .Replace(".cs", ".uxml");
                 } else {
                     var strings = path.Split(new string[] { "/Assets/" }, StringSplitOptions.None);
