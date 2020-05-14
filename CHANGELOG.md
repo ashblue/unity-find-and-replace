@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/ashblue/unity-find-and-replace/compare/v1.0.0...v1.0.1) (2020-05-14)
+
+
+### Bug Fixes
+
+* fixes broken package links ([feb03e0](https://github.com/ashblue/unity-find-and-replace/commit/feb03e021939b87c2f746f85cbcd41b4158597f5))
+
 # 1.0.0 (2020-05-14)
 
 
